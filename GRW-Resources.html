@@ -1,0 +1,161 @@
+<html>
+<head>
+<title>Ghost Recon Wildlands Resources</title>
+</head>
+
+<body>
+	<div id="log"></div>
+
+	<input type="number" id="fuel" value="1000" /> Fuel<br />
+	<input type="number" id="meds" value="1000" /> Meds<br />
+	<input type="number" id="coms" value="1000" /> Coms<br />
+	<input type="number" id="food" value="1000" /> Food<br />
+	<button onclick="giveMeResources();" id="btn" disabled="true">Give resources</button>
+
+
+	<script>
+
+		var socket = null;
+		var phoneId = null;
+
+		function giveMeResources() {
+			if(socket != null && socket.readyState > 0) {
+				if(socket.readyState == 1) {
+					// already connected and ready, just send the cash
+					sendRes();
+				} else {
+					// something went wrong
+					retry();
+				}
+			} else {
+
+			// new connection
+			connect();
+			}
+		}
+
+		// connect to running game
+		function connect() {
+            // supported by browser?
+            if (!("WebSocket" in window)) {
+                log("WebSockets not supported by your Browser, this won't work");
+                return;
+            }
+
+			//
+			socket = new WebSocket("ws://127.0.0.1:8080/smartphone", "v1.phonescoring.gr.ubisoft.com");
+
+			socket.onopen = function() {
+				log('Step 0/3: connection open');
+
+				// start
+				getPhoneIdHandshake();
+			};
+
+			// wait for message - then continue
+			socket.onmessage = function(e) {
+				if(e.data != undefined) {
+					parseMessage(e.data);
+					//log(e.data);
+				} else {
+					log('unknown message type');
+				}
+			};
+
+			socket.onerror = function() {
+				log('error');
+				retry();
+			};
+
+			socket.onclose = function(e) {
+				if(e.reason == 'CLOSE_PROTOCOL_ERROR') {
+					log('closed by game, happens often - just wait it out');
+					retry();
+				} else {
+					log('closed with unexpected reason: '+e.reason);
+					console.log(e);
+				}
+			};
+
+		}
+
+		// reload window, very most secure way to destroy all websocket remains and shit without having work
+		function retry() {
+			close();
+
+			location.reload();
+		}
+
+		function parseMessage(msg) {
+			var json = JSON.parse(msg);
+
+			if(json.phoneID != undefined) {
+				// phoneID given, nice - let's go
+				if(phoneId == null) { // only once, server may send id multiple times
+					phoneId = json.phoneID;
+					log('Step 1/3: PhoneID '+phoneId);
+
+					sendSyncEnd();
+				}
+
+				// next step: end sync
+				socket.onmessage = null;
+			} else {
+				close();
+				log('try again in 3s...');
+				window.setTimeout( connect, 3000 );
+			}
+		}
+
+		function getPhoneIdHandshake() {
+			var handshake = '{"root":{"__class":"PhoneDataCmdHandshakeHello","clientVersion":"0.1"}}';
+			socket.send(handshake);
+		}
+
+		// final connection
+		function sendSyncEnd() {
+			log('Step 2/3: attempt stable connection');
+
+			var syncEnd = '{"root":{"__class":"PhoneDataCmdSyncEnd","phoneID":'+phoneId+'}}';
+			socket.send(syncEnd);
+
+			// wait 3s until unlocking button - probably works if there was no error yet
+			window.setTimeout(unlockBtn, 3000);
+		}
+
+		// works after a stable connection is established, called by btn-click
+		function sendRes() {
+			var fuel = document.getElementById('fuel').value;
+			var food = document.getElementById('food').value;
+			var coms = document.getElementById('coms').value;
+			var meds = document.getElementById('meds').value;
+
+			log('+ Resources sent');
+
+			//var resStr = '{"root":{"__class":"PhoneDataCmdResourceUpdate","clientVersion":"0.1","Gasoline":500,"FoodPacks":1500,"ComTools":1500,"Medecine":1500}}'; // string to send
+			var resStr = '{"root":{"__class":"PhoneDataCmdResourceUpdate","clientVersion":"0.1","Gasoline":'+fuel+',"FoodPacks":'+food+',"ComTools":'+coms+',"Medecine":'+meds+'}}'; // string to send
+			socket.send(resStr);
+		}
+
+		// close connection
+		function close() {
+			socket.close(); // close
+		}
+
+		// log visible
+		function log(str) {
+			var log = document.getElementById('log');
+			log.innerHTML = log.innerHTML + '<br />' + str;
+		}
+
+		// unlock btn when connection is stable
+		function unlockBtn() {
+			document.getElementById('btn').disabled = false;
+			log('Step 3/3: looks stable now, you may smash dat button to transfer your resources');
+		}
+
+		connect();
+	</script>
+
+</body>
+</html>
