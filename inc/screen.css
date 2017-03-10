@@ -1,0 +1,103 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 16px;
+    font-family: Arial, Verdana, sans-serif;
+    color: #000;
+    background: url(../res/grw_screenshot_5_250766.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: top center;
+    padding-bottom: 20px;
+}
+
+.flex {
+    display: flex !important;
+    flex-direction: row;
+}
+
+.layout50, .layout100 {
+    vertical-align: top;
+    padding: 20px;
+    margin: 20px 20px 0 20px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.layout50 {
+    flex: 1 1 50%;
+    display: inline-block;
+}
+.layout50:first-child {
+    margin-right: 10px;
+}
+.layout50:last-child {
+    margin-left: 10px;
+}
+
+.layout100 {
+    width: calc(100% - 80px);
+    display: block;
+}
+
+h5 {
+    margin: 30px 0 10px 0;
+    font-size: 140%;
+    font-weight: bold;
+}
+
+h6 {
+    margin: 30px 0 10px 0;
+    font-size: 130%;
+    font-weight: bold;
+}
+
+h5:first-child, h6:first-child {
+    margin-top:0;
+}
+
+label {
+    background: rgba(255, 255, 255, 0.75);
+    padding: 8px;
+    width: 60px;
+    display: inline-block;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    clear: right;
+}
+
+button, input {
+    font-size: 16px;
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 2px;
+    border: 0;
+    background: rgb(15, 115, 179);
+    opacity: 1;
+    color: #fff;
+    width: 50%;
+}
+
+input {
+    color: #000;
+    background: #fff;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+button[disabled] {
+    opacity: 0.6;
+}
+
+#ample {
+    background: rgb(218, 139, 46);
+}
+#ample.connecting {
+    background: rgb(218, 46, 46);
+}
+#ample.connected {
+    background: rgb(19, 187, 10);
+}

@@ -1,161 +1,72 @@
 <html>
 <head>
 <title>Ghost Recon Wildlands Resources</title>
+
+<link rel="stylesheet" media="screen" href="inc/screen.css" />
 </head>
 
 <body>
-	<div id="log"></div>
 
-	<input type="number" id="fuel" value="1000" /> Fuel<br />
-	<input type="number" id="meds" value="1000" /> Meds<br />
-	<input type="number" id="coms" value="1000" /> Coms<br />
-	<input type="number" id="food" value="1000" /> Food<br />
-	<button onclick="giveMeResources();" id="btn" disabled="true">Give resources</button>
+	<div class="layout100 flex">
+		<div style="flex:1 1 auto;">
+			<h5>You are about to cheat...</h5>
+			<p>
+				...which is totally okay in my opinion in this coop game &ndash; at least when it comes to resources. You may find gathering them too grindy, maybe you don't like to capture all the transports &ndash; decide yourself if you need this.
+				<br />
+				But remember: this is a big part of the game and you are probably throwing away that nice game time you could have had.
+			</p>
+			<p>
+				Using this tool will, if nothing goes wrong, grant you the selected amount of resources on your <strong>currently logged in save slot</strong> in Ghost Recon Wildlands.
+			</p>
+			<p>
+				You might want to give it a second thought: <strong>there is no way back!</strong>
+			</p>
 
+			<h5>WARNING</h5>
+			<p>
+				This game is protected by EasyAntiCheat and maybe other things I don't know of, but I find it very unlikely to be banned or sanctioned by adding resources over an API Ubisoft themselves implemented and didn't invest a single minute in security on. I mean, it's neither encrypted nor anyhow limited on the game side - like they want us to magically create resources from some electrones.
+		</div>
 
-	<script>
+		<img src="res/grw_logo.png" style="flex: 0 0 270px; margin-left:20px; height:268px;">
+	</div>
 
-		var socket = null;
-		var phoneId = null;
+	<div class="flex">
+		<div class="layout50">
+			<h6>1. Connect to game</h6>
+			<input type="text" id="ip" value="127.0.0.1" placeholder="127.0.0.1"><label>ip</label>
+			<p>Use 127.0.0.1 if you opened this page on the same PC your game is running on. If it's a different device, enter corresponding ip address here (may work with consoles as well, but I don't really give a damn on you gamepad using scum).</p>
 
-		function giveMeResources() {
-			if(socket != null && socket.readyState > 0) {
-				if(socket.readyState == 1) {
-					// already connected and ready, just send the cash
-					sendRes();
-				} else {
-					// something went wrong
-					retry();
-				}
-			} else {
+			<button onclick="stopReloading = false; connect();" id="btn_connect" style="display:inline-block">Connect to game</button><label id="ample">&nbsp;</label>
+			<button onclick="stopReloading = true; location.href = 'GRW-Resources.html'" id="btn_stopReloading" style="display:none">Stop reloading</button>
 
-			// new connection
-			connect();
-			}
-		}
+			<h6>2. wait for connection</h6>
+			<p>Wait for the go, see log on the right side for information regarding your connection status.<p>
+			<p>If you have problems here, make sure you disabled the Windows firewall, have the game running and are logged in (read: able to run around)</p>
 
-		// connect to running game
-		function connect() {
-            // supported by browser?
-            if (!("WebSocket" in window)) {
-                log("WebSockets not supported by your Browser, this won't work");
-                return;
-            }
+			<h6>3. Select amount of resources</h6>
+			<input type="number" id="fuel" value="1000" /><label>Fuel</label>
+			<input type="number" id="meds" value="1000" /><label>Meds</label>
+			<input type="number" id="coms" value="1000" /><label>Coms</label>
+			<input type="number" id="food" value="1000" /><label>Food</label>
 
-			//
-			socket = new WebSocket("ws://127.0.0.1:8080/smartphone", "v1.phonescoring.gr.ubisoft.com");
+			<h6>3. Transfer resources</h6>
+			<button onclick="giveMeResources();" id="btn_giveMeRes" disabled="true">Give resources</button>
 
-			socket.onopen = function() {
-				log('Step 0/3: connection open');
+			<p>
+				As of March 10, 2017 there is no limit on how many and how often you can transfer resources. You may press the button multiple times if it pleases you. <br />
+				My recommendation: don't even press it once, rather group up with some nice peeps, have some drugs and fun and earn the resources yourself, lazy shit.
+			</p>
+		</div>
+		<div class="layout50">
+			<h6>Log</h6>
+			<div id="log"></div>
+		</div>
+	</div>
 
-				// start
-				getPhoneIdHandshake();
-			};
+	<div class="layout100">
+		Ghost Recon Wildlands&copy;&#0153; is a trademark owned by Ubisoft and what, you know the drill. I don't own any of the images or content here, all credits go to Ubisoft for creating this awesome game and graphics. Thanks Ubi! Looking forward for some super cool dlc contents.
+	</div>
 
-			// wait for message - then continue
-			socket.onmessage = function(e) {
-				if(e.data != undefined) {
-					parseMessage(e.data);
-					//log(e.data);
-				} else {
-					log('unknown message type');
-				}
-			};
-
-			socket.onerror = function() {
-				log('error');
-				retry();
-			};
-
-			socket.onclose = function(e) {
-				if(e.reason == 'CLOSE_PROTOCOL_ERROR') {
-					log('closed by game, happens often - just wait it out');
-					retry();
-				} else {
-					log('closed with unexpected reason: '+e.reason);
-					console.log(e);
-				}
-			};
-
-		}
-
-		// reload window, very most secure way to destroy all websocket remains and shit without having work
-		function retry() {
-			close();
-
-			location.reload();
-		}
-
-		function parseMessage(msg) {
-			var json = JSON.parse(msg);
-
-			if(json.phoneID != undefined) {
-				// phoneID given, nice - let's go
-				if(phoneId == null) { // only once, server may send id multiple times
-					phoneId = json.phoneID;
-					log('Step 1/3: PhoneID '+phoneId);
-
-					sendSyncEnd();
-				}
-
-				// next step: end sync
-				socket.onmessage = null;
-			} else {
-				close();
-				log('try again in 3s...');
-				window.setTimeout( connect, 3000 );
-			}
-		}
-
-		function getPhoneIdHandshake() {
-			var handshake = '{"root":{"__class":"PhoneDataCmdHandshakeHello","clientVersion":"0.1"}}';
-			socket.send(handshake);
-		}
-
-		// final connection
-		function sendSyncEnd() {
-			log('Step 2/3: attempt stable connection');
-
-			var syncEnd = '{"root":{"__class":"PhoneDataCmdSyncEnd","phoneID":'+phoneId+'}}';
-			socket.send(syncEnd);
-
-			// wait 3s until unlocking button - probably works if there was no error yet
-			window.setTimeout(unlockBtn, 3000);
-		}
-
-		// works after a stable connection is established, called by btn-click
-		function sendRes() {
-			var fuel = document.getElementById('fuel').value;
-			var food = document.getElementById('food').value;
-			var coms = document.getElementById('coms').value;
-			var meds = document.getElementById('meds').value;
-
-			log('+ Resources sent');
-
-			//var resStr = '{"root":{"__class":"PhoneDataCmdResourceUpdate","clientVersion":"0.1","Gasoline":500,"FoodPacks":1500,"ComTools":1500,"Medecine":1500}}'; // string to send
-			var resStr = '{"root":{"__class":"PhoneDataCmdResourceUpdate","clientVersion":"0.1","Gasoline":'+fuel+',"FoodPacks":'+food+',"ComTools":'+coms+',"Medecine":'+meds+'}}'; // string to send
-			socket.send(resStr);
-		}
-
-		// close connection
-		function close() {
-			socket.close(); // close
-		}
-
-		// log visible
-		function log(str) {
-			var log = document.getElementById('log');
-			log.innerHTML = log.innerHTML + '<br />' + str;
-		}
-
-		// unlock btn when connection is stable
-		function unlockBtn() {
-			document.getElementById('btn').disabled = false;
-			log('Step 3/3: looks stable now, you may smash dat button to transfer your resources');
-		}
-
-		connect();
-	</script>
-
+	<script src="inc/script.js"></script>
 </body>
 </html>
