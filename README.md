@@ -21,6 +21,15 @@ And because the game uses the handy WebSockets protocol, which your browser spea
 More details and instructions on the page itself.
 
 
+## How to use it
+
+I tested Chromium and Firefox successfully, so probably Chrome will work as well. But Internet Explorer and Edge, oh boi - give it a try and post your experience to /dev/null.
+
+* Either download the files from github and use them local
+
+* or got to [this unencrypted page](http://crystal-mett.de/GRW-Resources.html) as it won't work on github directly (really, your modern browser tries to keep your gradma safe by not allowing mixed content - Github forces https, the game requires unsecured data - doesn't work in Chrome or Firefox nowadays)
+
+
 ## Issues
 
 There is a nasty error I can't get rid of. It has something to do with websocket messages from the game containing something else beneath UTF-8 content. Because of that error I have to reload the whole page to give it a second, third, sometimes even more tries.
