@@ -27,7 +27,7 @@ I tested Chromium and Firefox successfully, so probably Chrome will work as well
 
 * Either download the files from github and use them local
 
-* or got to [this unencrypted page](http://crystal-mett.de/GRW-Resources.html) as it won't work on github directly (really, your modern browser tries to keep your gradma safe by not allowing mixed content - Github forces https, the game requires unsecured data - doesn't work in Chrome or Firefox nowadays)
+* ~~or got to this unencrypted page as it won't work on github directly (really, your modern browser tries to keep your gradma safe by not allowing mixed content - Github forces https, the game requires unsecured data - doesn't work in Chrome or Firefox nowadays)~~
 
 
 ## Issues
